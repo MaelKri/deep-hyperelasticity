@@ -1,7 +1,9 @@
 import torch
 
 def compute_deformations_measures(F):
-    C=torch.matmul(F.transpose(1,2), F)
+    # Calcul des invariants à partir des déformations F
+
+    C=torch.matmul(F.transpose(1,2), F) # Tenseur de Cauchy
     I1 = torch.diagonal(C, dim1=1, dim2=2).sum(dim=1)
 
     C_squared=torch.matmul(C, C)

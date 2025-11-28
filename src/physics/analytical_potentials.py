@@ -4,20 +4,28 @@ import numpy as np
 from src.physics.invariants import compute_deformations_measures
 
 class HyperelasticPotential(nn.Module):
+    # Méthode Parent pour tous les modèles à implémenter. 
     def __init__(self):
         super().__init__()
+
     def forward(self, F, t=None):
+        #Méthode forward à implémenter dans les sous classes (=modèles hyperelastiques considérés) 
         raise NotImplementedError("La methode forward doit être implémentée par la sous classe.")
+    
     def compute_stress(self, F, t=None):
+        # Calcul de la contrainte de Piola-Kirchoff P avec partie hydrostatique (pour l'incompréssibilité)
         F_in = F.detach().clone().requires_grad_(True)
         psi=self.forward(F_in, t)
 
+        # P = dW/dF -pF^{-T}
+        # Calcul 1er terme
         P_raw = torch.autograd.grad(
             outputs=psi.sum(),
             inputs=F_in,
             create_graph=True,
             retain_graph=True,
         )[0]
+        # Calcul second terme
         F_T = F_in.transpose(-2, -1)
         sigma_raw = P_raw @ F_T
         if F_in.dim() == 3:
@@ -27,6 +35,8 @@ class HyperelasticPotential(nn.Module):
         else:
             p = sigma_raw[1, 1]
             F_inv_T = torch.inverse(F_in).t()
+
+        # Calcul de P (incompressible)    
         P_corrected = P_raw - p * F_inv_T
         return(P_corrected)
 
