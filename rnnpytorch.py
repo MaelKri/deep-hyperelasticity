@@ -217,7 +217,7 @@ for epoch in range(num_epochs):
         pred = model(X)
         # loss = loss_fn(pred, y)
 
-        relative_error = (pred - y) / (torch.abs(y) + 0.1)
+        relative_error = 10.0 * (pred - y) / (torch.abs(y) + 0.01)
         loss = torch.mean(relative_error**2)
 
         # loss_values.append(loss.item())
