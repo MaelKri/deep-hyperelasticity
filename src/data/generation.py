@@ -10,7 +10,7 @@ class DeformationSampler:
     def _get_compressibility_factor(self, stretch_ratio):
         return 1.0 / torch.sqrt(stretch_ratio)
     
-    def sample_uniaxial(self, n_samples, stretch_min=0.0, stretch_max=4.0):
+    def sample_uniaxial(self, n_samples, stretch_min=1.0, stretch_max=4.0):
         lambdas = torch.empty(n_samples).uniform_(stretch_min,stretch_max).to(self.device)
         lat_contraction = 1.0 / torch.sqrt(lambdas)
         F = torch.zeros(n_samples, 3, 3, device=self.device)
@@ -19,7 +19,7 @@ class DeformationSampler:
         F[:, 2, 2] = lat_contraction
         return(F, lambdas)
     
-    def sample_biaxial(self, n_samples, stretch_min=0.0, stretch_max=4.0):
+    def sample_biaxial(self, n_samples, stretch_min=1.0, stretch_max=4.0):
         lambdas = torch.empty(n_samples).uniform_(stretch_min, stretch_max).to(self.device)
         z_contraction= 1.0/(lambdas**2)
         F = torch.zeros(n_samples, 3, 3, device=self.device)
@@ -86,7 +86,7 @@ class SyntheticDatasetGenerator:
 
 if __name__ == "__main__":
     # 1. Instancier le modèle physique (Vérité Terrain)
-    gt_model = NeoHookeanPotential()
+    gt_model = GornetDesmoratPotential()
     
     # 2. Générateur
     generator = SyntheticDatasetGenerator(gt_model)

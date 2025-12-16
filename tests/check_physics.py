@@ -55,38 +55,58 @@ def plot_model_behavior():
     # --- TEST 2 : CISAILLEMENT SIMPLE ---
     print("--- Génération Cisaillement Simple ---")
     gammas = torch.linspace(0.0, 0.5, n_steps).to(device)
+
+    F_pure_shear = torch.eye(3).unsqueeze(0).repeat(n_steps, 1, 1)
+    F_pure_shear[:, 0, 0] = lambdas
+    F_pure_shear[:, 1, 1] = 1.0/lambdas
+
     F_shear = torch.eye(3).unsqueeze(0).repeat(n_steps, 1, 1)
     F_shear[:, 0, 1] = gammas
     F_shear.requires_grad = True
     
     P_shear_nh = nh_model.compute_stress(F_shear, t=None)
     P_shear_gd = gd_model.compute_stress(F_shear, t=None)
+
+    P_shear_nh_pure = nh_model.compute_stress(F_pure_shear, t=None)
+    P_shear_gd_pure = gd_model.compute_stress(F_pure_shear, t=None)
+
+    P12_nh_pure = P_shear_nh_pure[:, 0, 0].detach().numpy()
+    P12_gd_pure = P_shear_gd_pure[:, 0, 0].detach().numpy()
     
     P12_nh = P_shear_nh[:, 0, 1].detach().numpy()
     P12_gd = P_shear_gd[:, 0, 1].detach().numpy()
     gam_np = gammas.detach().numpy()
 
     # --- PLOTS ---
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(12, 5))
     
     ax = axes[0]
     ax.plot(lam_np, P11_exact, 'k--', linewidth=2, label='Analytique Exact (NH)')
-    ax.plot(lam_np, P11_nh, 'o', markersize=4, label='Votre Code (NH)', alpha=0.7)
-    ax.plot(lam_np, P11_gd, 'o', linewidth=2, label='Gornet-Desmorat', alpha=0.7)
-    ax.plot(lam_np, P11_exact2, 'b-', linewidth=2, label='Gornet-Desmorat Th', alpha=0.7)
+    ax.plot(lam_np, P11_nh, 'o', markersize=4, label='NH Code', alpha=0.7)
+    ax.plot(lam_np, P11_gd, 'o', linewidth=2, label='Gornet-Desmorat Code', alpha=0.7)
+    ax.plot(lam_np, P11_exact2, 'b-', linewidth=2, label='Gornet-Desmorat Exacte', alpha=0.7)
 
-    ax.set_title("Test Traction Uniaxiale ($P_{11}$ vs $\lambda$)")
-    ax.set_xlabel("Élongation $\lambda$")
-    ax.set_ylabel("Contrainte $P_{11}$ [MPa]")
+    ax.set_title(r"Test Traction Uniaxiale ($P_{11}$ vs $\lambda$)")
+    ax.set_xlabel(r"Élongation $\lambda$")
+    ax.set_ylabel(r"Contrainte $P_{11}$ [MPa]")
     ax.legend()
     ax.grid(True, alpha=0.3)
     
     ax = axes[1]
     ax.plot(gam_np, P12_nh, 'b-', label='Neo-Hookean')
     ax.plot(gam_np, P12_gd, 'r-', label='Gornet-Desmorat')
-    ax.set_title("Test Cisaillement ($P_{12}$ vs $\gamma$)")
-    ax.set_xlabel("Cisaillement $\gamma$")
-    ax.set_ylabel("Contrainte $P_{12}$ [MPa]")
+    ax.set_title(r"Test Cisaillement ($P_{12}$ vs $\gamma$)")
+    ax.set_xlabel(r"Cisaillement $\gamma$")
+    ax.set_ylabel(r"Contrainte $P_{12}$ [MPa]")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    ax = axes[2]
+    ax.plot(lam_np, P12_nh_pure, 'b-', label='Neo-Hookean')
+    ax.plot(lam_np, P12_gd_pure, 'r-', label='Gornet-Desmorat')
+    ax.set_title(r"Test Cisaillement ($P_{12}$ vs $\gamma$)")
+    ax.set_xlabel(r"Cisaillement $\gamma$")
+    ax.set_ylabel(r"Contrainte $P_{12}$ [MPa]")
     ax.legend()
     ax.grid(True, alpha=0.3)
     

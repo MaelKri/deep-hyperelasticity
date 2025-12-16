@@ -29,11 +29,11 @@ class HyperelasticPotential(nn.Module):
         F_T = F_in.transpose(-2, -1)
         sigma_raw = P_raw @ F_T
         if F_in.dim() == 3:
-            p = sigma_raw[:, 1, 1].view(-1, 1, 1)
+            p = sigma_raw[:, 2, 2].view(-1, 1, 1)
             # Inversion de F pour le terme correctif (Batch-safe)
             F_inv_T = torch.inverse(F_in).transpose(-2, -1)
         else:
-            p = sigma_raw[1, 1]
+            p = sigma_raw[2, 2]
             F_inv_T = torch.inverse(F_in).t()
 
         # Calcul de P (incompressible)    
